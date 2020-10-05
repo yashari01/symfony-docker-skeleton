@@ -41,3 +41,9 @@ services:
       - php-fpm
     ports:
       - "80:80"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 18080:8080
