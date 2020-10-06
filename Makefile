@@ -47,3 +47,4 @@ updateschema: ## Update the schema
 	@cd $(APP_DIR) && $(PHP) bin/console doctrine:schema:update --dump-sql --force
 	@cd $(APP_DIR) && $(PHP) bin/console doctrine:migrations:migrate -n
 
+
