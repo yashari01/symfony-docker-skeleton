@@ -51,15 +51,19 @@ class UserFixtures extends BaseFixtures
         $oAdminUser->setFirstName("Ahmed");
         $oAdminUser->setLastName("M'SOUBER");
         $oAdminUser->setRoles(['ROLE_ADMIN']);
+        $oAdminUser->setStatus(User::IS_CREATED);
+        $oAdminUser->setOptin(User::OPTIN);
         $this->manager->persist($oAdminUser);
 
-        $this->createMany(User::class, 3, function (User $oUser){
+        $this->createMany(User::class, 7, function (User $oUser){
             $oUser->setEmail($this->faker->safeEmail());
             $encodedPassword = $this->encoder->encodePassword($oUser, $this->faker->password);
             $oUser->setPassword($encodedPassword);
             $oUser->setFirstName($this->faker->firstName());
             $oUser->setLastName($this->faker->lastName());
             $oUser->setRoles(['ROLE_USER']);
+            $oUser->setStatus(User::IS_CREATED);
+            $oUser->setOptin($this->faker->boolean);
         });
         $this->manager->flush();
     }
