@@ -42,8 +42,14 @@ services:
     ports:
       - "80:80"
 
-  adminer:
-    image: adminer
-    restart: always
+  mailcatcher:
+    image: schickling/mailcatcher
     ports:
-      - 18080:8080
+      - "1080:1080"
+      - "1025:1025"
+
+#  adminer:
+#    image: adminer
+#    restart: always
+#    ports:
+#      - 18080:8080
