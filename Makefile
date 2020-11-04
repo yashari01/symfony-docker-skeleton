@@ -27,7 +27,8 @@ show_services: ## show docker containers
 
 .PHONY: up
 up: ## Up all services
-	@cd $(APP_INFRA) && $(DOCKER_COMPOSE) up
+	@cd $(APP_INFRA) && $(DOCKER_COMPOSE) up && clean
+	@cd $(APP_DIR) && $(PHP) bin/console doctrine:schema:update --force && $(PHP) bin/console doctrine:fixtures:load
 
 .PHONY: down
 down: ## down all services

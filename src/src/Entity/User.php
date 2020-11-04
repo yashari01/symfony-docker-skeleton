@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Core\Services\UploadFileHelper;
 use App\Entity\Compose\Metadata;
 use App\Entity\Compose\MetadataInterface;
 use App\Entity\Compose\Status;
@@ -38,6 +39,11 @@ class User implements UserInterface, MetadataInterface, StatusInterface
 
     public const ROLE_USER = 'ROLE_USER';
     public const ROLE_ADMIN = 'ROLE_ADMIN';
+
+    public const ROLES = [
+        'ROLE_USER' => 'User',
+        'ROLE_ADMIN' => 'Admin'
+    ];
 
     public const OPTIN = 1;
     public const OPTOUT = 0;
@@ -89,6 +95,11 @@ class User implements UserInterface, MetadataInterface, StatusInterface
      * @ORM\Column(type="boolean")
      */
     private $optin;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $image;
 
 
     public function __construct()
@@ -234,6 +245,23 @@ class User implements UserInterface, MetadataInterface, StatusInterface
         $this->optin = $optin;
 
         return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(string $image): self
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    public function getImagePath(): string
+    {
+        return UploadFileHelper::FOLDER_IMAGE.'/'.$this->getImage();
     }
 
 }
