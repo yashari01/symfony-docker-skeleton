@@ -25,7 +25,7 @@
         {% for user in users %}
             <tr>
                 <td>{{ user.id }}</td>
-                <td>{% if user.image %}<img src="{{ uploaded_asset(user.imagePath) }}" width="auto" height="150"/>
+                <td>{% if user.image %}<img src="{{ uploaded_asset(user.imagePath)|imagine_filter('squared_thumbnail_small')  }}" height="100"/>
                         {#<img src="{{ asset('uploads/' ~ user.image) }}" width="auto" height="150"/>#}
                     {% endif %}
                 </td>
