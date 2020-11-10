@@ -8,6 +8,8 @@ use App\Entity\Compose\MetadataInterface;
 use App\Entity\Compose\Status;
 use App\Entity\Compose\StatusInterface;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -101,12 +103,18 @@ class User implements UserInterface, MetadataInterface, StatusInterface
      */
     private $image;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Folder::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $folder;
+
 
     public function __construct()
     {
         $this->status = self::IS_CREATED;
         $this->roles[] = self::ROLE_USER;
         $this->optin = 0;
+        $this->folder = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -262,6 +270,37 @@ class User implements UserInterface, MetadataInterface, StatusInterface
     public function getImagePath(): string
     {
         return UploadFileHelper::FOLDER_IMAGE.'/'.$this->getImage();
+    }
+
+    /**
+     * @return Collection|Folder[]
+     */
+    public function getFolder(): Collection
+    {
+        return $this->folder;
+    }
+
+    public function addFolder(Folder $folder): self
+    {
+        if (!$this->folder->contains($folder)) {
+            $this->folder[] = $folder;
+            $folder->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFolder(Folder $folder): self
+    {
+        if ($this->folder->contains($folder)) {
+            $this->folder->removeElement($folder);
+            // set the owning side to null (unless already changed)
+            if ($folder->getUser() === $this) {
+                $folder->setUser(null);
+            }
+        }
+
+        return $this;
     }
 
 }

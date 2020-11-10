@@ -4,7 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
-
+    uploads_dir_name: 'uploads'
+    #uploads_base_url: '%env(SITE_BASE_URL)%/%uploads_dir_name%'
+    uploads_base_url: 'http://%env(AWS_S3_BUCKET_NAME)%.s3.amazonaws.com/'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -32,6 +34,16 @@ services:
 
     App\Core\Services\UploadFileHelper:
         bind:
-            $uploadPath: '%kernel.project_dir%/public/uploads'
+            $publicUploadsFilesystem: '@oneup_flysystem.public_uploads_filesystem_filesystem'
+            $uploadedAssetsBaseUrl: '%uploads_base_url%'
+            #$uploadPath: '%kernel.project_dir%/public/uploads'
 
     Symfony\Component\Asset\Context\RequestStackContext: '@assets.context'
+
+    Aws\S3\S3Client:
+        arguments:
+            - version: 'latest'
+              region: "eu-west-3" # 'eu-central-1' for example
+              credentials:
+                  key: "%env(AWS_S3_ACCESS_ID)%"
+                  secret: "%env(AWS_S3_ACCESS_SECRET)%"

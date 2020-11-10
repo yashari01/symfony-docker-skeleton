@@ -25,8 +25,12 @@
         {% for user in users %}
             <tr>
                 <td>{{ user.id }}</td>
-                <td>{% if user.image %}<img src="{{ uploaded_asset(user.imagePath)|imagine_filter('squared_thumbnail_small')  }}" height="100"/>
+                <td>{% if user.image %}
+                    <a href="{{ uploaded_asset(user.imagePath) }}" target="_blank">
+                        <img src="{{ user.imagePath|imagine_filter('squared_thumbnail_small')  }}" height="100"/>
+                        {#<img src="{{ uploaded_asset(user.imagePath)|imagine_filter('squared_thumbnail_small')  }}" height="100"/>#}
                         {#<img src="{{ asset('uploads/' ~ user.image) }}" width="auto" height="150"/>#}
+                    </a>
                     {% endif %}
                 </td>
                 <td>{{ user.email }}</td>

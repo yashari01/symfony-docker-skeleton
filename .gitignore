@@ -10,5 +10,5 @@ src/vendor
 src/var
 src/migrations
 provisionning/logs
-public/uploads
+src/public/uploads/
 ###< symfony/framework-bundle ###

@@ -4,8 +4,11 @@
 namespace App\DataFixtures;
 
 
+use App\Core\Services\UploadFileHelper;
 use App\Entity\User;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 
@@ -17,6 +20,11 @@ class UserFixtures extends BaseFixtures
      * @var UserPasswordEncoderInterface
      */
     private $encoder;
+    /**
+     * @var UploadFileHelper $uploadFileHelper
+     */
+    private  $uploadFileHelper;
+
     private const ADMINS = array(
         array(
             'email' => 'a.msouber@gmail.com',
@@ -32,15 +40,25 @@ class UserFixtures extends BaseFixtures
         )
     );
 
+    private static $articleImages =[
+        'braunaspirator-5fa2eaf9638b7.jpeg',
+        'comezy-5fa1931a5799a.jpeg',
+        'yoocca4-5fa58cb07d04d.jpeg'
+    ];
+
     /**
      * @required
+     * @param UserPasswordEncoderInterface $encoder
+     * @param UploadFileHelper $uploadFileHelper
      */
     public function setDependency
     (
-        UserPasswordEncoderInterface $encoder
+        UserPasswordEncoderInterface $encoder,
+        UploadFileHelper $uploadFileHelper
     )
     {
         $this->encoder = $encoder;
+        $this->uploadFileHelper = $uploadFileHelper;
     }
     protected function loadData(ObjectManager $manager)
     {
@@ -64,8 +82,19 @@ class UserFixtures extends BaseFixtures
             $oUser->setRoles(['ROLE_USER']);
             $oUser->setStatus(User::IS_CREATED);
             $oUser->setOptin($this->faker->boolean);
+            $imageFilename = $this->fakeUploadImage();
+            $oUser->setImage($imageFilename);
         });
         $this->manager->flush();
+    }
+    private function fakeUploadImage(): string
+    {
+        $randomImage = $this->faker->randomElement(self::$articleImages);
+        $fs = new Filesystem();
+        $targetPath = sys_get_temp_dir().'/'.$randomImage;
+        $fs->copy(__DIR__.'/images/'.$randomImage, $targetPath, true);
+        return $this->uploadFileHelper
+            ->upload(new File($targetPath),null);
     }
 
 }

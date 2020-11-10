@@ -2,6 +2,21 @@
 liip_imagine:
     # valid drivers options include "gd" or "gmagick" or "imagick"
     driver: "gd"
+    loaders: #is responsible for reading the original image
+        flysystem_loader:
+            flysystem:
+                filesystem_service: oneup_flysystem.public_uploads_filesystem_filesystem
+    resolvers: #responsible for saving the thumbnail image back to the filesystem after all of the transformations.
+        flysystem_resolver:
+            flysystem:
+                #filesystem_service: oneup_flysystem.public_uploads_filesystem_filesystem
+                filesystem_service: oneup_flysystem.cached_uploads_filesystem_filesystem
+                cache_prefix: media/cache #the subdirectory within the filesystem where the files should be stored
+                root_url: '%uploads_base_url%' #the URL that all the paths will be prefixed with when the image paths are rendered
+
+    data_loader: flysystem_loader
+    # default cache resolver for saving thumbnails
+    cache: flysystem_resolver
 
     filter_sets:
         squared_thumbnail_small:
@@ -10,3 +25,4 @@ liip_imagine:
                     size:          [100, 100]
                     mode:          outbound
                     allow_upscale: true
+

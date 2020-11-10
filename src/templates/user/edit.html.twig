@@ -10,4 +10,14 @@
     <a href="{{ path('user_index') }}">back to list</a>
 
     {{ include('user/_delete_form.html.twig') }}
+    <div class="row">
+        <div class="col-sm-4">
+            <h3>References</h3>
+            <form action="{{ path('reference_upload',
+                {id: user.id}) }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="reference">
+                <button type="submit" class="btn btn-sm btn-primary">Upload</button>
+            </form>
+        </div>
+    </div>
 {% endblock %}
