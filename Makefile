@@ -51,3 +51,9 @@ updateschema: ## Update the schema
 .PHONY: clean
 clean: ## Clean cache
 	@cd $(APP_DIR) cache:pool:clear cache.global_clearer
+
+.PHONY: network
+network: ## List available Web Interface when not using Varnish
+	@echo "${YELLOW}DEV with HTTP${RED}S${RESTORE}: http${RED}s${RESTORE}://localhost"
+	@echo "${YELLOW}mailtrap${RESTORE}: https://mailtrap.io/inboxes/1087377/messages"
+	@echo "${YELLOW}RabbitMQ Management${RESTORE}: http://0.0.0.0:15672"

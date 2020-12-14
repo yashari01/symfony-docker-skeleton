@@ -2,14 +2,18 @@
 
 namespace App\Controller;
 
+use App\Core\AppCacheManager;
+use App\Core\Services\Mailer\Mailer;
 use App\Core\Services\UploadFileHelper;
 use App\Entity\User;
 use App\Form\UserType;
+use App\Messenger\Messages\SendEmail;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -20,10 +24,13 @@ class UserController extends AbstractController
     /**
      * @Route("/admin/", name="user_index", methods={"GET"})
      */
-    public function index(UserRepository $userRepository): Response
+    public function index(UserRepository $userRepository, AppCacheManager $cacheManager): Response
     {
+        $users = $cacheManager->getUsersCache()->get('users-list', function() use ($userRepository){
+            return $userRepository->findAll();
+        });
         return $this->render('user/index.html.twig', [
-            'users' => $userRepository->findAll(),
+            'users' => $users,
         ]);
     }
 
@@ -69,7 +76,11 @@ class UserController extends AbstractController
     /**
      * @Route("/admin/user/{id}/edit", name="user_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, User $user,UploadFileHelper $uploadFileHelper): Response
+    public function edit(
+        Request $request, 
+        User $user,UploadFileHelper $uploadFileHelper,
+        MessageBusInterface $messageBus
+    ): Response
     {
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
@@ -77,6 +88,8 @@ class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $uploadedFile = $form['fileName']->getData();
             $usreImage = $uploadFileHelper->upload($uploadedFile,$user->getImage());
+            $sendEmailObject = new SendEmail($user->getId(), Mailer::SEND_EMAIL);
+            $messageBus->dispatch($sendEmailObject);
             $user->setImage($usreImage);
             $this->getDoctrine()->getManager()->flush();
 

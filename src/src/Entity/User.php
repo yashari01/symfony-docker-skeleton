@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Core\Services\UploadFileHelper;
 use App\Entity\Compose\Metadata;
 use App\Entity\Compose\MetadataInterface;
@@ -13,10 +14,15 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
+ * @ApiResource(
+ *  normalizationContext={"groups"={"user:read"}, "swagger_definition_name"="Read"},
+ *  denormalizationContext={"groups"={"user:write"}, "swagger_definition_name"="write"}
+ * )
  */
 class User implements UserInterface, MetadataInterface, StatusInterface
 {
@@ -54,22 +60,26 @@ class User implements UserInterface, MetadataInterface, StatusInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"user:read","user:write"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Groups({"user:read","user:write","article:read","article:write"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
+     * @Groups({"user:read","user:write","article:read"})
      */
     private $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Groups({"user:write"})
      */
     private $password;
 
@@ -80,11 +90,13 @@ class User implements UserInterface, MetadataInterface, StatusInterface
 
     /**
      * @ORM\Column(type="string", length=150)
+     * @Groups({"user:read","user:write","article:read"})
      */
     private $firstName;
 
     /**
      * @ORM\Column(type="string", length=155)
+     * @Groups({"user:read","user:write","article:read"})
      */
     private $lastName;
 
@@ -100,6 +112,7 @@ class User implements UserInterface, MetadataInterface, StatusInterface
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"user:read","user:write","article:read"})
      */
     private $image;
 
@@ -108,6 +121,17 @@ class User implements UserInterface, MetadataInterface, StatusInterface
      */
     private $folder;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Countries::class)
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $country;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Article::class, mappedBy="user")
+     */
+    private $articles;
+
 
     public function __construct()
     {
@@ -115,6 +139,7 @@ class User implements UserInterface, MetadataInterface, StatusInterface
         $this->roles[] = self::ROLE_USER;
         $this->optin = 0;
         $this->folder = new ArrayCollection();
+        $this->articles = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -297,6 +322,49 @@ class User implements UserInterface, MetadataInterface, StatusInterface
             // set the owning side to null (unless already changed)
             if ($folder->getUser() === $this) {
                 $folder->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCountry(): ?Countries
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?Countries $country): self
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Article[]
+     */
+    public function getArticles(): Collection
+    {
+        return $this->articles;
+    }
+
+    public function addArticle(Article $article): self
+    {
+        if (!$this->articles->contains($article)) {
+            $this->articles[] = $article;
+            $article->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Article $article): self
+    {
+        if ($this->articles->contains($article)) {
+            $this->articles->removeElement($article);
+            // set the owning side to null (unless already changed)
+            if ($article->getUser() === $this) {
+                $article->setUser(null);
             }
         }
 

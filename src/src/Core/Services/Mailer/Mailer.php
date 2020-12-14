@@ -23,6 +23,8 @@ class Mailer
      */
     private $mailer;
 
+    public const SEND_EMAIL = 'sendMail';
+
     /**
      * @Required
      */
